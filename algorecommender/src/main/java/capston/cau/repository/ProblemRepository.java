@@ -1,0 +1,34 @@
+package capston.cau.repository;
+
+import capston.cau.domain.Problem;
+import capston.cau.domain.QProblem;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+
+import javax.persistence.EntityManager;
+
+@Repository
+@RequiredArgsConstructor
+public class ProblemRepository {
+
+    private final EntityManager em;
+    private JPAQueryFactory queryFactory;
+
+    //test용 problem 객체 추가
+    public void save(Problem problem){
+        em.persist(problem);
+    }
+
+    public Problem findById(Long id){
+        queryFactory = new JPAQueryFactory(em);
+        Problem findProblem = queryFactory.selectFrom(QProblem.problem)
+                .where(QProblem.problem.id.eq(id))
+                .fetchFirst();
+        return findProblem;
+    }
+
+
+
+
+}
