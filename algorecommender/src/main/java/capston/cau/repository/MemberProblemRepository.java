@@ -1,5 +1,6 @@
 package capston.cau.repository;
 
+import capston.cau.domain.Member;
 import capston.cau.domain.MemberProblem;
 import capston.cau.domain.ProblemStatus;
 import capston.cau.domain.QMemberProblem;
@@ -32,7 +33,10 @@ public class MemberProblemRepository {
 
     public Long addTrying(Long memberId,Long problemId){
         MemberProblem mp = new MemberProblem();
-        mp.setMember(memberRepository.findById(memberId));
+        Member findMember = memberRepository.findById(memberId).orElse(null);
+        if(findMember ==null)
+            return -1L;
+        mp.setMember(findMember);
         mp.setProblem(problemRepository.findById(problemId));
         mp.setProblemStatus(ProblemStatus.TRYING);
         em.persist(mp);

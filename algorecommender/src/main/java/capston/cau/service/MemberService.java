@@ -26,7 +26,7 @@ public class MemberService {
     }
 
     public Member findById(Long id){
-        return memberRepository.findById(id);
+        return memberRepository.findById(id).orElse(null);
     }
 
     //중복 제거하기
