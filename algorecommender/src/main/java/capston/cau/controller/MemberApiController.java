@@ -39,16 +39,16 @@ public class MemberApiController {
         memberDto.setName(member.getName());
         memberDto.setBojId(member.getBojId());
 
-        List<Problem> memberProblemList = memberService.getMemberProblemList(id);
-
-        for (Problem problem : memberProblemList) {
-            ProblemDto problemDto = new ProblemDto();
-            problemDto.setId(problem.getId());
-            problemDto.setName(problem.getName());
-            problemDto.setUrl(problem.getUrl());
-            problemDto.setStatus(memberService.getProblemStatus(member.getId(),problem.getId()));
-            memberDto.addProblemToList(problemDto);
-        }
+//        List<Problem> memberProblemList = memberService.getMemberProblemList(id);
+//
+//        for (Problem problem : memberProblemList) {
+//            ProblemDto problemDto = new ProblemDto();
+//            problemDto.setId(problem.getId());
+//            problemDto.setName(problem.getName());
+//            problemDto.setUrl(problem.getUrl());
+//            problemDto.setStatus(memberService.getProblemStatus(member.getId(),problem.getId()));
+//            memberDto.addProblemToList(problemDto);
+//        }
         return memberDto;
     }
 

@@ -1,15 +1,16 @@
 package capston.cau.domain;
 
-import capston.cau.domain.auth.AuthProvider;
+import capston.cau.domain.auth.SocialLoginType;
 import capston.cau.domain.auth.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.minidev.json.annotate.JsonIgnore;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -21,16 +22,11 @@ public class Member {
     @Column(name = "member_id")
     private Long id;
 
-    @Column(nullable = false)
+    @Column
     private String name;
 
     @Column(nullable = false,unique = true)
     private String email;
-
-    private String bojId;
-
-    @Column(nullable = false)
-    private Boolean emailVerified = false;
 
     @JsonIgnore
     @Column
@@ -38,13 +34,16 @@ public class Member {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    private AuthProvider provider;
+    private SocialLoginType provider;
 
-    @Column
-    private String providerId;
-
-    @Column
+    @Enumerated(EnumType.STRING)
     private Role role;
+
+    @Column
+    private String bojId;
+
+    @Column
+    private String refreshToken;
 
     @OneToMany(mappedBy="member",cascade = CascadeType.ALL)
     private List<MemberProblem> problemRelay = new ArrayList<>();
@@ -58,15 +57,11 @@ public class Member {
     }
 
     @Builder
-    public Member(String name, String email,Role role,Boolean emailVerified,
-                  String password,AuthProvider provider, String providerId){
-        this.name = name;
+    public Member(String email, String password, SocialLoginType provider, Role role){
         this.email = email;
         this.role = role;
-        this.emailVerified = emailVerified;
-        this.password = password;
         this.provider = provider;
-        this.providerId = providerId;
+        this.password = password;
     }
 
     public Member update(String name){
@@ -74,7 +69,7 @@ public class Member {
         return this;
     }
 
-    public void setProvider(AuthProvider valueOf) {
+    public void setProvider(SocialLoginType valueOf) {
         this.provider = valueOf;
     }
 
@@ -84,5 +79,13 @@ public class Member {
 
     public void setPassword(String password){
         this.password=password;
+    }
+
+//    public void addRole(Role role) {
+//        this.role.add(role);
+//    }
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken=refreshToken;
     }
 }

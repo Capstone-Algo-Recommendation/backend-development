@@ -45,11 +45,10 @@ public class MemberService {
         return relayRepository.changeProblemStatus(memberId,problemId,status);
     }
 
-    public List<Problem> getMemberProblemList(Long id) {return memberRepository.getMemberProblemList(id);}
-
-    public List<Problem> getMemberSolvedProblems(Long id){
-        return memberRepository.solvedList(id);
-    }
+//    public List<Problem> getMemberProblemList(Long id) {return memberRepository.getMemberProblemList(id);}
+//    public List<Problem> getMemberSolvedProblems(Long id){
+//        return memberRepository.solvedList(id);
+//    }
 
     public String getProblemStatus(Long memberId, Long problemId){
         ProblemStatus status = relayRepository.getMemberProblemStatus(memberId, problemId);
