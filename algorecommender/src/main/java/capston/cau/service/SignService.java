@@ -1,5 +1,6 @@
 package capston.cau.service;
 
+import antlr.Token;
 import capston.cau.domain.Member;
 import capston.cau.domain.auth.Role;
 import capston.cau.domain.auth.SocialLoginType;
@@ -7,10 +8,7 @@ import capston.cau.dto.member.request.MemberLoginRequestDto;
 import capston.cau.dto.member.request.MemberRegisterRequestDto;
 import capston.cau.dto.member.response.MemberLoginResponseDto;
 import capston.cau.dto.member.response.MemberRegisterResponseDto;
-import capston.cau.exception.InvalidRefreshTokenException;
-import capston.cau.exception.LoginFailureException;
-import capston.cau.exception.MemberEmailAlreadyExistsException;
-import capston.cau.exception.MemberNotFoundException;
+import capston.cau.exception.*;
 import capston.cau.jwt.JwtTokenProvider;
 import capston.cau.jwt.dto.TokenRequestDto;
 import capston.cau.jwt.dto.TokenResponseDto;
@@ -27,7 +25,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -38,10 +38,7 @@ public class SignService {
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
-
     private final ProviderService providerService;
-
-
 
     @Transactional
     public MemberRegisterResponseDto registerMember(MemberRegisterRequestDto requestDto) {
@@ -50,6 +47,7 @@ public class SignService {
                 Member.builder()
                         .email(requestDto.getEmail())
                         .password(passwordEncoder.encode(requestDto.getPassword()))
+                        .role(Role.ROLE_MEMBER)
                         .provider(SocialLoginType.LOCAL)
                         .build());
         return MemberRegisterResponseDto.builder()
@@ -73,6 +71,12 @@ public class SignService {
                 member.getRefreshToken());
     }
 
+    public boolean logoutMember(HttpServletRequest request){
+        String token = jwtTokenProvider.resolveToken(request);
+        jwtTokenProvider.makeTokenExpire(token);
+        return true;
+    }
+
     @Transactional
     public MemberLoginResponseDto loginMemberByProvider(String code, SocialLoginType provider) {
         AccessToken accessToken = providerService.getAccessToken(code, provider);
@@ -93,7 +97,7 @@ public class SignService {
     private Member saveMember(ProfileDto profile, SocialLoginType provider) {
         Member member = Member.builder()
                 .email(profile.getEmail())
-                .password(null)
+                .password(UUID.randomUUID().toString())
                 .provider(provider)
                 .role(Role.ROLE_GUEST)
                 .build();
@@ -106,24 +110,29 @@ public class SignService {
         if (!jwtTokenProvider.validateTokenExpiration(requestDto.getRefreshToken()))
             throw new InvalidRefreshTokenException();
 
-        Member member = findMemberByToken(requestDto);
+        Member member = findMemberByToken(requestDto.getAccessToken());
 
         if (!member.getRefreshToken().equals(requestDto.getRefreshToken()))
             throw new InvalidRefreshTokenException();
 
         String accessToken = jwtTokenProvider.createToken(member.getEmail());
         String refreshToken = jwtTokenProvider.createRefreshToken();
+
         member.updateRefreshToken(refreshToken);
         return new TokenResponseDto(accessToken, refreshToken);
     }
 
-    public Member findMemberByToken(TokenRequestDto requestDto) {
-        Authentication auth = jwtTokenProvider.getAuthentication(requestDto.getAccessToken());
+    public Member findMemberByToken(String token) {
+        Authentication auth = jwtTokenProvider.getAuthentication(token);
+        if(jwtTokenProvider.validateTokenExpiration(token)==false){
+            System.out.println("validate error");
+            throw new AccessTokenInvalidatedException();
+        }
+
+        System.out.println("validate error not happened");
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
         String username = userDetails.getUsername();
         return memberRepository.findByEmail(username).orElseThrow(MemberNotFoundException::new);
     }
-
-
 
 }

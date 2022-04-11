@@ -1,10 +1,13 @@
 package capston.cau.service;
 
 import capston.cau.domain.Problem;
+import capston.cau.dto.problem.ProblemDto;
 import capston.cau.repository.ProblemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -22,11 +25,11 @@ public class ProblemService {
     }
 
     public Problem findById(Long id){
-        return problemRepository.findById(id);
+        return problemRepository.findById(id).get();
     }
 
     private boolean validateDuplicateProblem(Problem problem){
-        Problem findProblem = problemRepository.findById(problem.getId());
+        Problem findProblem = problemRepository.findById(problem.getId()).orElse(null);
         if(findProblem!=null) {
             return false;
 //            throw new IllegalStateException("이미 존재하는 문제입니다.");

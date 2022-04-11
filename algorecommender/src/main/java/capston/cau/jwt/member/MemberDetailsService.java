@@ -33,10 +33,6 @@ public class MemberDetailsService implements UserDetailsService {
                 .email(member.getEmail())
                 .password(member.getPassword())
                 .authorities(test)
-//                        SimpleGrantedAuthority(member.getRole().toString()).Collectors.toList();
-//                        member.getRoles().stream()
-//                        .map(auth -> new SimpleGrantedAuthority(auth.toString()))
-//                        .collect(Collectors.toList()))
                 .build();
     }
 }

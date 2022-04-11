@@ -61,7 +61,7 @@ class MemberServiceTest {
         assertThat(findMember.getName()).isEqualTo("testMem2");
     }
 
-    @Test
+    /*@Test
 //    @Rollback(false)
     void 멤버_도전문제_추가(){
         Problem problem = new Problem(1002L,"A*B","www.test3.com");
@@ -83,5 +83,5 @@ class MemberServiceTest {
 
         List<Problem> memberSolvedProblems2 = memberService.getMemberSolvedProblems(testId);
         assertThat(before).isEqualTo(memberSolvedProblems2.size()-1);
-    }
+    }*/
 }

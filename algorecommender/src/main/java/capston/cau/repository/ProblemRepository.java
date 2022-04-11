@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -20,12 +21,12 @@ public class ProblemRepository {
         em.persist(problem);
     }
 
-    public Problem findById(Long id){
+    public Optional<Problem> findById(Long id){
         queryFactory = new JPAQueryFactory(em);
         Problem findProblem = queryFactory.selectFrom(QProblem.problem)
                 .where(QProblem.problem.id.eq(id))
                 .fetchFirst();
-        return findProblem;
+        return Optional.ofNullable(findProblem);
     }
 
 

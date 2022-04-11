@@ -44,6 +44,24 @@ public class ExceptionAdvice {
     public Result invalidRefreshTokenException() {
         return responseService.getFailureResult(-104, "Refresh Token이 유효하지 않습니다.");
     }
+
+    @ExceptionHandler(MemberNotFoundException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Result memberNotFoundException(){
+        return responseService.getFailureResult(-105, "Invalid Access Token");
+    }
+
+    @ExceptionHandler(AccessTokenInvalidatedException.class)
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public Result accessTokenInvalidatedException(){
+        return responseService.getFailureResult(-106,"Access Token Invalidated! Login Again");
+    }
+
+    @ExceptionHandler(ProblemNotFoundException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Result problemNotFoundException(){
+        return responseService.getFailureResult(-107,"Problem is not found");
+    }
 /*
     @ExceptionHandler(EmailNotAuthenticatedException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

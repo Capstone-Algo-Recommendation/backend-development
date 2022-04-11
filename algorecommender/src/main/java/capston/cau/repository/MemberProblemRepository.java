@@ -1,9 +1,7 @@
 package capston.cau.repository;
 
-import capston.cau.domain.Member;
-import capston.cau.domain.MemberProblem;
-import capston.cau.domain.ProblemStatus;
-import capston.cau.domain.QMemberProblem;
+import capston.cau.domain.*;
+import capston.cau.exception.ProblemNotFoundException;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -34,10 +32,12 @@ public class MemberProblemRepository {
     public Long addTrying(Long memberId,Long problemId){
         MemberProblem mp = new MemberProblem();
         Member findMember = memberRepository.findById(memberId).orElse(null);
+        Problem findProblem = problemRepository.findById(problemId).orElseThrow(ProblemNotFoundException::new);
+
         if(findMember ==null)
             return -1L;
         mp.setMember(findMember);
-        mp.setProblem(problemRepository.findById(problemId));
+        mp.setProblem(findProblem);
         mp.setProblemStatus(ProblemStatus.TRYING);
         em.persist(mp);
         return mp.getId();
@@ -68,7 +68,6 @@ public class MemberProblemRepository {
             memberProblem.setProblemStatus(status);
             return memberProblem.getId();
         }
-
         return -1L;
     }
 

@@ -1,5 +1,6 @@
 package capston.cau.jwt;
 
+import capston.cau.exception.MemberNotFoundException;
 import capston.cau.jwt.member.MemberDetails;
 import capston.cau.jwt.member.MemberDetailsService;
 import io.jsonwebtoken.*;
@@ -16,6 +17,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Optional;
 
 @Setter
 @Component
@@ -25,7 +27,7 @@ public class JwtTokenProvider {
     @Value("${spring.jwt.secretKey}")
     private String secretKey;
 
-    private long tokenValidTime = 1000L*60*30;
+    private long tokenValidTime = 1000L*60*60;
     private long refreshTokenValidTime = 1000L*60*60*24*1;
 
     private final MemberDetailsService memberDetailsService;
@@ -66,6 +68,8 @@ public class JwtTokenProvider {
             return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
         } catch(ExpiredJwtException e) {
             return e.getClaims().getSubject();
+        } catch(SignatureException e){
+            throw new MemberNotFoundException();
         }
     }
 
@@ -75,10 +79,24 @@ public class JwtTokenProvider {
 
     public boolean validateTokenExpiration(String token) {
         try {
-            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
-            return true;
+            Date now = new Date();
+            Date expiration = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getExpiration();
+            System.out.println("expiration = " + expiration);
+            if(Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getExpiration().after(now)){
+                return true;
+            }else {
+                return false;
+            }
         } catch (Exception e) {
             return false;
         }
     }
+
+    public void makeTokenExpire(String token){
+        Date now = new Date();
+        Claims body = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
+        body.setExpiration(new Date(now.getTime()));
+        Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().setExpiration(new Date(now.getTime()));
+    }
+
 }

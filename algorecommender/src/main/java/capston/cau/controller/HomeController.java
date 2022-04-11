@@ -17,7 +17,6 @@ public class HomeController {
     private final SignService signService;
     private final ResponseService responseService;
 
-//    @ApiOperation(value="테스트 홈",notes = "인증테스트")
     @GetMapping("/hello")
     public String hello(){
         return "hello";
