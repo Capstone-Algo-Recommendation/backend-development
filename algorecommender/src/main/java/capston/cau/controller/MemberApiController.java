@@ -1,32 +1,19 @@
 package capston.cau.controller;
 
 import capston.cau.domain.Member;
-import capston.cau.domain.Problem;
-import capston.cau.domain.ProblemStatus;
-import capston.cau.dto.AuthenticateToken;
-import capston.cau.dto.Result;
 import capston.cau.dto.SingleResult;
-import capston.cau.dto.member.CreateMemberRequest;
 import capston.cau.dto.member.MemberDto;
-import capston.cau.dto.problem.ProblemDto;
 import capston.cau.dto.problem.ProblemStatusChangeRequest;
-import capston.cau.exception.MemberNotFoundException;
 import capston.cau.jwt.JwtTokenProvider;
-import capston.cau.jwt.dto.TokenRequestDto;
 import capston.cau.service.MemberService;
 import capston.cau.service.ResponseService;
 import capston.cau.service.SignService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -61,4 +48,6 @@ public class MemberApiController {
         return responseService.getSingleResult(null);
     }
 
+
+    //TODO token 선처리를 controller단에서 해주기
 }

@@ -18,7 +18,7 @@ import static capston.cau.domain.QMember.*;
 import static capston.cau.domain.QMemberProblem.memberProblem;
 import static capston.cau.domain.QProblem.problem;
 
-@Repository
+
 public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByEmail(String email);
     Optional<Member> findByEmailAndProvider(String email, SocialLoginType provider);

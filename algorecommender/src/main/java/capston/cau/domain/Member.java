@@ -2,6 +2,8 @@ package capston.cau.domain;
 
 import capston.cau.domain.auth.SocialLoginType;
 import capston.cau.domain.auth.Role;
+import capston.cau.domain.board.Comment;
+import capston.cau.domain.board.Post;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,7 +12,6 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -47,6 +48,12 @@ public class Member {
 
     @OneToMany(mappedBy="member",cascade = CascadeType.ALL)
     private List<MemberProblem> problemRelay = new ArrayList<>();
+
+    @OneToMany(mappedBy="member",cascade = CascadeType.ALL)
+    private List<Post> posts = new ArrayList<>();
+
+    @OneToMany(mappedBy="member",cascade = CascadeType.ALL)
+    private List<Comment> comments = new ArrayList<>();
 
     public void setName(String name) {
         this.name = name;

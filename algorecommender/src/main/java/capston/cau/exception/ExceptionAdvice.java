@@ -62,6 +62,10 @@ public class ExceptionAdvice {
     public Result problemNotFoundException(){
         return responseService.getFailureResult(-107,"Problem is not found");
     }
+
+    @ExceptionHandler(PostNotFoundException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Result postNotFoundException(){return responseService.getFailureResult(-108,"Post not found");}
 /*
     @ExceptionHandler(EmailNotAuthenticatedException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

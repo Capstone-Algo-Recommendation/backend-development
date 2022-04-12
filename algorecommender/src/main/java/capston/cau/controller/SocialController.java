@@ -44,5 +44,4 @@ public class SocialController {
         mav.setViewName("redirect");
         return mav;
     }
-
 }

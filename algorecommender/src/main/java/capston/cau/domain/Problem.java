@@ -1,5 +1,6 @@
 package capston.cau.domain;
 
+import capston.cau.domain.board.Post;
 import lombok.Getter;
 
 import javax.persistence.*;
@@ -20,6 +21,9 @@ public class Problem {
 
     @OneToMany(mappedBy = "problem",cascade = CascadeType.ALL)
     private List<MemberProblem> memberRelay = new ArrayList<>();
+
+    @OneToMany(mappedBy ="problem",cascade = CascadeType.ALL)
+    private List<Post> posts = new ArrayList<>();
 
     protected Problem(){
 
