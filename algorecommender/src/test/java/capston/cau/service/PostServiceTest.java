@@ -3,11 +3,11 @@ package capston.cau.service;
 import capston.cau.domain.Member;
 import capston.cau.domain.auth.Role;
 import capston.cau.domain.auth.SocialLoginType;
-import capston.cau.dto.board.PostResponseDto;
-import capston.cau.dto.board.PostSaveRequestDto;
+import capston.cau.dto.board.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.parameters.P;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,10 +27,12 @@ class PostServiceTest {
     private MemberService memberService;
 
     @Autowired
+    private CommentService commentService;
+
+    @Autowired
     private EntityManager em;
 
     @Test
-    @Rollback(false)
     void 글_작성(){
 
         Member member = Member.builder()
@@ -48,12 +50,38 @@ class PostServiceTest {
         postSaveRequestDto.setProblemId(1000L);
 
         Long postId = postService.save(id,postSaveRequestDto);
+//        PostResponseDto findPost = postService.findById(postId);
+        PostResponseDto findPost = postService.findById(postId);
+
         em.flush();
         em.clear();
-        PostResponseDto byId = postService.findById(postId);
+
+        for (int i=0 ;i<10;i++ ) {
+            CommentRequestDto commentRequestDto = new CommentRequestDto();
+            commentRequestDto.setContent("hello!"+ String.valueOf(i));
+            postService.addComment(id,postId,commentRequestDto);
+        }
+
+//        PostResponseDto findPost = postService.findById(postId);
+        System.out.println("findPost.getId() = " + findPost.getId());
+
+        postService.deleteComment(id,7L);
+
+        CommentRequestDto commentRequestDto = new CommentRequestDto();
+        commentRequestDto.setCommentId(4L);
+
+        commentRequestDto.setContent("update Test");
+        Long aLong = postService.updateComment(1L, postId,commentRequestDto);
+
+        System.out.println("aLong = " + aLong);
+        em.flush();
+        em.clear();
+
+        PostUpdateRequestDto postUpdateRequestDto = new PostUpdateRequestDto();
+        postUpdateRequestDto.setTitle("update title");
+        postUpdateRequestDto.setContent("update content");
+        postService.update(postId,1L,postUpdateRequestDto);
 
         postService.delete(postId,1L);
-
     }
-
 }

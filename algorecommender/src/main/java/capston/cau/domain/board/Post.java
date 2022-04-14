@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -41,10 +42,24 @@ public class Post extends BaseTimeEntity {
     @Column(columnDefinition = "integer default 0")
     private int view;
 
+    @BatchSize(size=100)
     @OneToMany(mappedBy="post",cascade = CascadeType.ALL)
     private List<Comment> comments = new ArrayList<>();
 
     //수정
     public void update(String title, String content) { this.title = title; this.content = content; }
+
+    public void updateComment(Long commentId,String content){
+        for (Comment comment : this.comments) {
+            if(comment.getId() == commentId) {
+                comment.update(content);
+                return;
+            }
+        }
+    }
+
+    public void addComment(Comment comment){
+//        this.comments.add(comment);
+    }
 
 }

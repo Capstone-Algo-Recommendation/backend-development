@@ -32,4 +32,11 @@ public class Comment extends BaseTimeEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    public void update(String comment) {
+        this.comment = comment;
+    }
+
+    public void setComment(String comment){
+        this.comment = comment;
+    }
 }
