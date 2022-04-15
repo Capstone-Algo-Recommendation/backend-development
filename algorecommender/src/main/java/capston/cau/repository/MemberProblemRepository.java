@@ -1,6 +1,7 @@
 package capston.cau.repository;
 
 import capston.cau.domain.*;
+import capston.cau.exception.MemberNotFoundException;
 import capston.cau.exception.ProblemNotFoundException;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,7 @@ public class MemberProblemRepository {
 
     public Long addTrying(Long memberId,Long problemId){
         MemberProblem mp = new MemberProblem();
-        Member findMember = memberRepository.findById(memberId).orElse(null);
+        Member findMember = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
         Problem findProblem = problemRepository.findById(problemId).orElseThrow(ProblemNotFoundException::new);
 
         if(findMember ==null)
@@ -39,6 +40,21 @@ public class MemberProblemRepository {
         mp.setMember(findMember);
         mp.setProblem(findProblem);
         mp.setProblemStatus(ProblemStatus.TRYING);
+        em.persist(mp);
+        return mp.getId();
+    }
+
+    public Long addProblemInit(Long memberId,Long problemId,ProblemStatus status){
+        MemberProblem mp = new MemberProblem();
+        Member findMember = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
+        Problem findProblem = problemRepository.findById(problemId).orElse(null);
+
+        if(findProblem==null)
+            return -1L;
+
+        mp.setMember(findMember);
+        mp.setProblem(findProblem);
+        mp.setProblemStatus(status);
         em.persist(mp);
         return mp.getId();
     }

@@ -3,7 +3,9 @@ package capston.cau.service;
 import capston.cau.domain.Member;
 import capston.cau.domain.Problem;
 import capston.cau.domain.ProblemStatus;
+import capston.cau.domain.auth.Role;
 import capston.cau.dto.member.MemberDto;
+import capston.cau.dto.member.request.MemberInfoInitRequestDto;
 import capston.cau.dto.problem.ProblemDto;
 import capston.cau.exception.LoginFailureException;
 import capston.cau.exception.MemberNotFoundException;
@@ -78,6 +80,17 @@ public class MemberService {
                 .build();
 
         return memberDto;
+    }
+
+    @Transactional
+    public Long initMemberInfo(Long memberId, MemberInfoInitRequestDto requestDto){
+        Member member = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
+        member.setBojId(requestDto.getBojId());
+        for (ProblemDto problem : requestDto.getProblems()) {
+            relayRepository.addProblemInit(memberId,problem.getId(),problem.getStatus());
+        }
+        member.setRole(Role.ROLE_MEMBER);
+        return member.getId();
     }
 
     public List<Problem> getMemberSolvedProblems(Long id){

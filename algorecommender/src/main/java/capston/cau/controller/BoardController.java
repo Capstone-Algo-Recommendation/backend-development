@@ -1,12 +1,10 @@
 package capston.cau.controller;
 
 import capston.cau.domain.Member;
+import capston.cau.dto.MultipleResult;
 import capston.cau.dto.Result;
 import capston.cau.dto.SingleResult;
-import capston.cau.dto.board.CommentRequestDto;
-import capston.cau.dto.board.PostResponseDto;
-import capston.cau.dto.board.PostSaveRequestDto;
-import capston.cau.dto.board.PostUpdateRequestDto;
+import capston.cau.dto.board.*;
 import capston.cau.jwt.JwtTokenProvider;
 import capston.cau.service.PostService;
 import capston.cau.service.ResponseService;
@@ -15,10 +13,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
+// AUTHORIZED ONLY MEMBER
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/board")
+@RequestMapping("/api/board")
 public class BoardController {
 
     private final PostService postService;
@@ -27,9 +27,9 @@ public class BoardController {
     private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping()
-    public String boardMain(){
-        //메인 페이지, 페이징 구현해야
-        return "";
+    public MultipleResult<PostPreviewDto> boardMain(@RequestParam("page") int page){
+        List<PostPreviewDto> board = postService.getBoard(page);
+        return responseService.getMultipleResult(board);
     }
 
     @PostMapping()

@@ -4,10 +4,7 @@ import capston.cau.domain.Member;
 import capston.cau.domain.Problem;
 import capston.cau.domain.board.Comment;
 import capston.cau.domain.board.Post;
-import capston.cau.dto.board.CommentRequestDto;
-import capston.cau.dto.board.PostResponseDto;
-import capston.cau.dto.board.PostSaveRequestDto;
-import capston.cau.dto.board.PostUpdateRequestDto;
+import capston.cau.dto.board.*;
 import capston.cau.exception.MemberNotFoundException;
 import capston.cau.exception.PostNotFoundException;
 import capston.cau.repository.CommentRepository;
@@ -16,12 +13,16 @@ import capston.cau.repository.PostRepository;
 import capston.cau.repository.ProblemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -35,7 +36,14 @@ public class PostService {
     private final ProblemRepository problemRepository;
     private final EntityManager em;
 
-//    public List<>
+    public List<PostPreviewDto> getBoard(Integer page){
+
+        Page<Post> posts = postRepository.findAllByOrderByCreatedDateDesc(PageRequest.of(page,10));
+        List<PostPreviewDto> result = posts.getContent().stream().map(
+                postEntity->new PostPreviewDto(postEntity.getId(), postEntity.getTitle(), postEntity.getContent()))
+                .collect(Collectors.toList());
+        return result;
+    }
 
     @Transactional
     public Long save(Long memberId, PostSaveRequestDto saveRequestDto){

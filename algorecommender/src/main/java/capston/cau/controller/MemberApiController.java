@@ -3,6 +3,7 @@ package capston.cau.controller;
 import capston.cau.domain.Member;
 import capston.cau.dto.SingleResult;
 import capston.cau.dto.member.MemberDto;
+import capston.cau.dto.member.request.MemberInfoInitRequestDto;
 import capston.cau.dto.problem.ProblemStatusChangeRequest;
 import capston.cau.jwt.JwtTokenProvider;
 import capston.cau.service.MemberService;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-
 
 @RestController
 @RequiredArgsConstructor
@@ -30,6 +30,14 @@ public class MemberApiController {
         String token = jwtTokenProvider.resolveToken(request);
         MemberDto memberInfo = memberService.getMemberProblemList(token);
         return responseService.getSingleResult(memberInfo);
+    }
+
+    @PostMapping("/me/init")
+    public SingleResult<Long> initMemberInfo(HttpServletRequest request, @RequestBody MemberInfoInitRequestDto requestDto){
+        String token = jwtTokenProvider.resolveToken(request);
+        Member memberByToken = signService.findMemberByToken(token);
+        Long id = memberService.initMemberInfo(memberByToken.getId(), requestDto);
+        return responseService.getSingleResult(id);
     }
 
     @PostMapping("/me/add/{problemId}")

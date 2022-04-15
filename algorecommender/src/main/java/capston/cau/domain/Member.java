@@ -88,9 +88,9 @@ public class Member {
         this.password=password;
     }
 
-//    public void addRole(Role role) {
-//        this.role.add(role);
-//    }
+    public void setRole(Role role) {
+        this.role = role;
+    }
 
     public void updateRefreshToken(String refreshToken) {
         this.refreshToken=refreshToken;
