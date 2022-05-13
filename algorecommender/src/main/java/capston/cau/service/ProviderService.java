@@ -55,8 +55,8 @@ public class ProviderService {
 
         OAuthRequest oAuthRequest = oAuthRequestFactory.getRequest(code, provider);
         HttpEntity<LinkedMultiValueMap<String, String>> request = new HttpEntity<>(oAuthRequest.getMap(), httpHeaders);
-
         ResponseEntity<String> response = restTemplate.postForEntity(oAuthRequest.getUrl(), request, String.class);
+
         try {
             if (response.getStatusCode() == HttpStatus.OK) {
                 return gson.fromJson(response.getBody(), AccessToken.class);

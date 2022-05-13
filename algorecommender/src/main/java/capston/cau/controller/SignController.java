@@ -8,6 +8,7 @@ import capston.cau.dto.member.request.MemberRegisterRequestDto;
 import capston.cau.dto.member.response.MemberLoginResponseDto;
 import capston.cau.dto.member.response.MemberRegisterResponseDto;
 import capston.cau.jwt.dto.TokenRequestDto;
+import capston.cau.oauth.AccessToken;
 import capston.cau.oauth.AuthCode;
 import capston.cau.service.ResponseService;
 import capston.cau.service.SignService;
@@ -39,6 +40,14 @@ public class SignController {
     @PostMapping("/login/{provider}")
     public SingleResult<MemberLoginResponseDto> loginBySocial(@RequestBody AuthCode authCode, @PathVariable String provider) {
         MemberLoginResponseDto responseDto = signService.loginMemberByProvider(authCode.getCode(), getProviderValue(provider));
+        return responseService.getSingleResult(responseDto);
+    }
+
+    //TODO 에러핸들링, 수정
+    @PostMapping("/login/google/test")
+    public SingleResult<MemberLoginResponseDto> loginTest(@RequestBody AccessToken accessToken)
+    {
+        MemberLoginResponseDto responseDto = signService.loginMemberByProvider2(accessToken,SocialLoginType.GOOGLE);
         return responseService.getSingleResult(responseDto);
     }
 

@@ -94,6 +94,23 @@ public class SignService {
         }
     }
 
+    @Transactional
+    public MemberLoginResponseDto loginMemberByProvider2(AccessToken accessToken, SocialLoginType provider) {
+//        AccessToken accessToken = providerService.getAccessToken(code, provider);
+        ProfileDto profile = providerService.getProfile(accessToken.getAccess_token(), provider);
+
+        Optional<Member> findMember = memberRepository.findByEmailAndProvider(profile.getEmail(), provider);
+        if (findMember.isPresent()) {
+            Member member = findMember.get();
+            member.updateRefreshToken(jwtTokenProvider.createRefreshToken());
+            return new MemberLoginResponseDto(member.getId(), jwtTokenProvider.createToken(findMember.get().getEmail()), member.getRefreshToken());
+        } else {
+            Member saveMember = saveMember(profile, provider);
+            saveMember.updateRefreshToken(jwtTokenProvider.createRefreshToken());
+            return new MemberLoginResponseDto(saveMember.getId(), jwtTokenProvider.createToken(saveMember.getEmail()), saveMember.getRefreshToken());
+        }
+    }
+
     private Member saveMember(ProfileDto profile, SocialLoginType provider) {
         Member member = Member.builder()
                 .email(profile.getEmail())
