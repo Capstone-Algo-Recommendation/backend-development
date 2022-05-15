@@ -19,20 +19,26 @@ public class Problem {
     private String name;
     private String url;
 
+    private Long level;
+
     @OneToMany(mappedBy = "problem",cascade = CascadeType.ALL)
     private List<MemberProblem> memberRelay = new ArrayList<>();
 
     @OneToMany(mappedBy ="problem",cascade = CascadeType.ALL)
     private List<Post> posts = new ArrayList<>();
 
+    @OneToMany(mappedBy = "problem",cascade = CascadeType.ALL)
+    private List<ProblemCategory> categories = new ArrayList<>();
+
     protected Problem(){
 
     }
 
-    public Problem(Long id, String name, String url){
+    public Problem(Long id, String name, String url,Long level){
         this.id = id;
         this.name = name;
         this.url = url;
+        this.level = level;
     }
 
 }

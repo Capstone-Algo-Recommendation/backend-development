@@ -1,5 +1,6 @@
 package capston.cau;
 
+import capston.cau.domain.CategoryName;
 import capston.cau.domain.Member;
 import capston.cau.domain.Problem;
 import capston.cau.domain.auth.Role;
@@ -10,10 +11,16 @@ import capston.cau.repository.ProblemRepository;
 import capston.cau.service.MemberService;
 import capston.cau.service.PostService;
 import capston.cau.service.ProblemService;
+import jdk.jfr.Category;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -25,28 +32,7 @@ public class TestDataInit {
 
     @PostConstruct
     public void init(){
-
-        Problem problem1 = new Problem(1000L,"A+B","www.test1000.com");
-        Problem problem2 = new Problem(1001L,"A-B","www.test1001.com");
-        Problem problem3 = new Problem(1002L,"A*B","www.test1002.com");
-        Problem problem4 = new Problem(1003L,"A/B","www.test1003.com");
-        Problem problem5 = new Problem(1004L,"prob5","www.test1004.com");
-        Problem problem6 = new Problem(1005L,"prob6","www.test1005.com");
-        Problem problem7 = new Problem(1006L,"prob7","www.test1006.com");
-        Problem problem8 = new Problem(1007L,"prob8","www.test1007.com");
-        Problem problem9 = new Problem(1008L,"prob9","www.test1008.com");
-        Problem problem10 = new Problem(1009L,"prob10","www.test1009.com");
-
-        problemService.addProblem(problem1);
-        problemService.addProblem(problem2);
-        problemService.addProblem(problem3);
-        problemService.addProblem(problem4);
-        problemService.addProblem(problem5);
-        problemService.addProblem(problem6);
-        problemService.addProblem(problem7);
-        problemService.addProblem(problem8);
-        problemService.addProblem(problem9);
-        problemService.addProblem(problem10);
+        initCsvData();
 
         Member member = Member.builder()
                 .email("test")
@@ -55,7 +41,7 @@ public class TestDataInit {
                 .provider(SocialLoginType.GOOGLE)
                 .build();
 
-        member.setName("helloworld~");
+        member.setName("testMem");
         Long id = memberService.join(member);
 
         for(int i=0;i<30;i++) {
@@ -66,4 +52,114 @@ public class TestDataInit {
             postService.save(id,postSaveRequestDto);
         }
     }
+
+    public void initCsvData(){
+        List<String> csvList = new ArrayList<String>();
+        ClassPathResource rsc = new ClassPathResource("data/problemMeta.csv");
+        BufferedReader br = null;
+        try {
+            File csv = rsc.getFile();
+            String line = "";
+            br = new BufferedReader(new FileReader(csv));
+            br.readLine();
+            int cnt = 0;
+            while((line=br.readLine())!=null) { // readLine()은 파일에서 개행된 한 줄의 데이터를 읽어온다.
+                parseStrToProb(line);
+                cnt++;
+                if(cnt==200)
+                    break;
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (br != null) {
+                    br.close(); // 사용 후 BufferedReader를 닫아준다.
+                }
+            } catch(IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    private void parseStrToProb(String ln){
+        int len = ln.length();
+        List<String> strArr = new ArrayList<>();
+        String temp = "";
+        boolean flag = false;
+        for(int i=0;i<len;i++){
+              if(ln.charAt(i)=='"'){
+                  if(flag){
+                      strArr.add(temp);
+                      temp="";
+                      flag = false;
+                  }else{
+                      flag = true;
+                  }
+              }else if(ln.charAt(i)==','){
+                  if(flag){
+                      temp+=ln.charAt(i);
+                  }else{
+                      if(temp!="")
+                        strArr.add(temp);
+                      temp = "";
+                  }
+              }else{
+                  temp += ln.charAt(i);
+              }
+        }
+        strArr.add(temp);
+
+        Long problemId = Long.valueOf(strArr.get(1));
+        String problemName = strArr.get(2);
+        String problemUrl = "https://www.acmicpc.net/problem/"+strArr.get(1);
+
+        List<String> categories = new ArrayList<>();
+        String secondPart = strArr.get(3).substring(1, strArr.get(3).length()-1);
+        int secondLen = secondPart.length();
+        String categoryTemp = "";
+
+        for(int i=0;i<secondLen;i++){
+            if(secondPart.charAt(i)=='\''){
+                if(categoryTemp.length()!=0){
+                    categories.add(categoryTemp);
+                    categoryTemp = "";
+                }
+                continue;
+            }
+            if(secondPart.charAt(i)==' '||secondPart.charAt(i)==',')
+                continue;
+            categoryTemp+=secondPart.charAt(i);
+        }
+
+        String levelStr = strArr.get(strArr.size()-1);
+        Long level = Long.valueOf(levelStr);
+
+        createProblemAndCategory(problemId,problemName,problemUrl,level,categories);
+    }
+
+    private void createProblemAndCategory(Long problemId,String problemName,String problemUrl,Long problemLevel,
+                                          List<String> categoryName){
+        Problem problem = new Problem(problemId,problemName,problemUrl,problemLevel);
+        problemService.addProblem(problem);
+
+        List<Long> categoryId = new ArrayList<>();
+        for (String s : categoryName) {
+            Long flag = problemService.findCategoryByName(s);
+            if(flag ==-1L){
+                CategoryName category = new CategoryName();
+                category.setCategory(s);
+                flag = problemService.addCategory(category);
+            }
+            categoryId.add(flag);
+        }
+
+        for (Long id : categoryId) {
+            problemService.setProblemCategory(problem.getId(),id);
+        }
+    }
+
 }

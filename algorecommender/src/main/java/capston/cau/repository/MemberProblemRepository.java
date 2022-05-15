@@ -35,7 +35,7 @@ public class MemberProblemRepository {
         Member findMember = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
         Problem findProblem = problemRepository.findById(problemId).orElseThrow(ProblemNotFoundException::new);
 
-        if(findMember ==null)
+        if(findMember ==null || findProblem ==null)
             return -1L;
         mp.setMember(findMember);
         mp.setProblem(findProblem);
@@ -64,6 +64,7 @@ public class MemberProblemRepository {
         MemberProblem memberProblem = queryFactory.selectFrom(QMemberProblem.memberProblem)
                 .where(QMemberProblem.memberProblem.member.id.eq(memberId),QMemberProblem.memberProblem.problem.id.eq(problemId))
                 .fetchOne();
+
         if(memberProblem!=null){
             return memberProblem.getId();
         }

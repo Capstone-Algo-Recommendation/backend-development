@@ -2,20 +2,22 @@ package capston.cau.service;
 
 import capston.cau.domain.Member;
 import capston.cau.domain.Problem;
+import capston.cau.domain.ProblemCategory;
 import capston.cau.domain.ProblemStatus;
 import capston.cau.domain.auth.Role;
 import capston.cau.dto.member.MemberDto;
 import capston.cau.dto.member.request.MemberInfoInitRequestDto;
 import capston.cau.dto.problem.ProblemDto;
-import capston.cau.exception.LoginFailureException;
 import capston.cau.exception.MemberNotFoundException;
-import capston.cau.jwt.dto.TokenRequestDto;
 import capston.cau.repository.CustomMemberRepository;
 import capston.cau.repository.MemberProblemRepository;
 import capston.cau.repository.MemberRepository;
+import capston.cau.repository.ProblemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import capston.cau.jwt.dto.TokenRequestDto;
+import capston.cau.exception.LoginFailureException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +30,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final CustomMemberRepository customMemberRepository;
+    private final ProblemRepository problemRepository;
 
     private final MemberProblemRepository relayRepository;
     private final SignService signService;
@@ -57,17 +60,23 @@ public class MemberService {
         return relayRepository.changeProblemStatus(memberId,problemId,status);
     }
 
-    public MemberDto getMemberProblemList(String token) {
-        Member member = signService.findMemberByToken(token);
+    public MemberDto getMemberProblemList(Long id,String token) {
+//        Member member = signService.findMemberByToken(token);
+        Member member = this.findById(id);
         List<Problem> memberProblemList = customMemberRepository.getMemberProblemList(member.getId());
         List<ProblemDto> problemDtos = new ArrayList<>();
 
         for (Problem problem : memberProblemList) {
+
+            List<String> categories = problemRepository.findProblemCategory(problem.getId());
+
             ProblemDto problemDto = ProblemDto.builder()
                     .id(problem.getId())
                     .name(problem.getName())
                     .url(problem.getUrl())
+                    .level(problem.getLevel())
                     .status(relayRepository.getMemberProblemStatus(member.getId(),problem.getId()))
+                    .categories(categories)
                     .build();
             problemDtos.add(problemDto);
         }

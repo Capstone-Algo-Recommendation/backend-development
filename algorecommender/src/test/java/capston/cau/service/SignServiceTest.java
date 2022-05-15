@@ -48,8 +48,8 @@ class SignServiceTest {
         TokenRequestDto tokenRequestDto = new TokenRequestDto(memberLoginResponseDto.getToken(), memberLoginResponseDto.getRefreshToken());
         Member findMember = signService.findMemberByToken(tokenRequestDto.getAccessToken());
 
-        problemService.addProblem(new Problem(1000L,"1+1","www.1+1.com"));
-        problemService.addProblem(new Problem(1001L,"1-1","www.1-1.com"));
+        problemService.addProblem(new Problem(1000L,"1+1","www.1+1.com",1L));
+        problemService.addProblem(new Problem(1001L,"1-1","www.1-1.com",1L));
 
         memberProblemRepository.addTrying(findMember.getId(),1000L);
         memberProblemRepository.addTrying(findMember.getId(),1001L);

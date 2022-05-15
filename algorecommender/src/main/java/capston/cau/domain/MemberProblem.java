@@ -26,11 +26,9 @@ public class MemberProblem {
     public void setMember(Member member) {
         this.member = member;
     }
-
     public void setProblem(Problem problem) {
         this.problem = problem;
     }
-
     public void setProblemStatus(ProblemStatus problemStatus) {
         this.problemStatus = problemStatus;
     }
