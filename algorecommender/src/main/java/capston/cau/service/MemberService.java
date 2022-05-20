@@ -37,6 +37,9 @@ public class MemberService {
 
     @Transactional
     public Long join(Member member){
+        Member isExist = memberRepository.findByEmail(member.getEmail()).orElse(null);
+        if(isExist!=null)
+            return isExist.getId();
         memberRepository.save(member);
         return member.getId();
     }

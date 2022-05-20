@@ -32,42 +32,21 @@ public class TestDataInit {
 
     @PostConstruct
     public void init(){
-        initCsvData();
-
-        Member member = Member.builder()
-                .email("test")
-                .password("asegsrbasrbasrbas")
-                .role(Role.ROLE_MEMBER)
-                .provider(SocialLoginType.GOOGLE)
-                .build();
-
-        member.setName("testMem");
-        Long id = memberService.join(member);
-
-        for(int i=0;i<30;i++) {
-            PostSaveRequestDto postSaveRequestDto = new PostSaveRequestDto();
-            postSaveRequestDto.setTitle("test title"+String.valueOf(i));
-            postSaveRequestDto.setContent("test content"+String.valueOf(i));
-            postSaveRequestDto.setProblemId(1000L);
-            postService.save(id,postSaveRequestDto);
-        }
+//        initCsvData();
     }
 
     public void initCsvData(){
         List<String> csvList = new ArrayList<String>();
         ClassPathResource rsc = new ClassPathResource("data/problemMeta.csv");
         BufferedReader br = null;
+
         try {
             File csv = rsc.getFile();
             String line = "";
             br = new BufferedReader(new FileReader(csv));
             br.readLine();
-            int cnt = 0;
             while((line=br.readLine())!=null) { // readLine()은 파일에서 개행된 한 줄의 데이터를 읽어온다.
                 parseStrToProb(line);
-                cnt++;
-                if(cnt==200)
-                    break;
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -82,7 +61,6 @@ public class TestDataInit {
                 e.printStackTrace();
             }
         }
-
     }
 
     private void parseStrToProb(String ln){

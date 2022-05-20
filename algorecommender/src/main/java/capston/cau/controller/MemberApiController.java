@@ -25,12 +25,12 @@ public class MemberApiController {
     private final ResponseService responseService;
     private final JwtTokenProvider jwtTokenProvider;
 
-//    @GetMapping("/me")
-//    public SingleResult<MemberDto> getMyInfo(HttpServletRequest request){
-//        String token = jwtTokenProvider.resolveToken(request);
-//        MemberDto memberInfo = memberService.getMemberProblemList(token);
-//        return responseService.getSingleResult(memberInfo);
-//    }
+    @GetMapping("/me")
+    public SingleResult<MemberDto> getMyInfo(HttpServletRequest request){
+        String token = jwtTokenProvider.resolveToken(request);
+        MemberDto memberInfo = memberService.getMemberProblemList(token);
+        return responseService.getSingleResult(memberInfo);
+    }
 
     @PostMapping("/me/init")
     public SingleResult<Long> initMemberInfo(HttpServletRequest request, @RequestBody MemberInfoInitRequestDto requestDto){

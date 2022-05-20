@@ -3,8 +3,14 @@ package capston.cau.service;
 import capston.cau.domain.CategoryName;
 import capston.cau.domain.Problem;
 import capston.cau.domain.ProblemCategory;
+import capston.cau.dto.problem.FlaskResponse;
 import capston.cau.dto.problem.ProblemDto;
 import capston.cau.repository.ProblemRepository;
+import com.fasterxml.jackson.databind.util.JSONPObject;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.*;
@@ -21,6 +27,7 @@ import java.util.*;
 public class ProblemService {
 
     private final ProblemRepository problemRepository;
+    private final MemberService memberService;
 
     @Transactional
     public Long addProblem(Problem problem){
@@ -128,23 +135,48 @@ public class ProblemService {
         return problemDtos;
     }
 
-    public String getRecommendProblems(){
+    //15개 이하는 단계별로 풀어보기 문제 제공
+    public List<ProblemDto> getRecommendProblems(Long memberId){
 
         RestTemplate restTemplate = new RestTemplate();
+        List<Problem> memberSolvedProblems = memberService.getMemberSolvedProblems(memberId);
+
+//        if(memberSolvedProblems.size()<=15)
+//            return null;
 
         HttpHeaders headers = new HttpHeaders();;
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        
+        JsonObject jsonObject = new JsonObject();
 
-        HttpEntity<String> entity = new HttpEntity<String>("{\"id\":\"1\", \"name\":\"CTB\"}", headers);
+        JsonArray problemArr = new JsonArray();
+        for (Problem prob : memberSolvedProblems) {
+            JsonObject problemInfo = new JsonObject();
+            problemInfo.addProperty("id",prob.getId());
+            problemArr.add(problemInfo);
+        }
+
+        jsonObject.add("data", problemArr);
+
+        HttpEntity<String> entity = new HttpEntity<String>(jsonObject.toString(), headers);
         String returnData = "";
         try {
+            List<ProblemDto> recommList = new ArrayList<>();
             ResponseEntity<String> resp = restTemplate.postForEntity("http://localhost:5050/tospring", entity, String.class);
             returnData = resp.getBody();
+
+            FlaskResponse ret = new Gson().fromJson(returnData,FlaskResponse.class);
+            for (Long datum : ret.getData()) {
+                ProblemDto probData = this.findByIdToDto(datum);
+                if(probData != null)
+                    recommList.add(probData);
+            }
+            return recommList;
         }catch (HttpStatusCodeException e){
             System.out.println("e = " + e);
         }
-        return returnData;
+        return null;
     }
 
 

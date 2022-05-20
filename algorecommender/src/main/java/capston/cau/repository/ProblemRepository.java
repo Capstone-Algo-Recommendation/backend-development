@@ -42,7 +42,7 @@ public class ProblemRepository {
         queryFactory = new JPAQueryFactory(em);
         Problem findProblem = queryFactory.selectFrom(QProblem.problem)
                 .where(QProblem.problem.id.eq(id))
-                .fetchFirst();
+                .fetchOne();
         return Optional.ofNullable(findProblem);
     }
 
@@ -67,6 +67,7 @@ public class ProblemRepository {
     }
 
     public List<Problem> findProblemByLevel(Long level, Pageable pageable){
+        queryFactory = new JPAQueryFactory(em);
         List<Problem> fetch = queryFactory.selectFrom(QProblem.problem)
                 .where(QProblem.problem.level.eq(level))
                 .offset(pageable.getOffset())
@@ -77,6 +78,7 @@ public class ProblemRepository {
     }
 
     public List<Problem> findProblemByLevelAndCategory(Long level,Long categoryId,Pageable pageable){
+        queryFactory = new JPAQueryFactory(em);
         List<Problem> fetch = queryFactory.selectFrom(QProblem.problem)
                 .where(QProblem.problem.level.eq(level))
                 .join(QProblem.problem.categories, QProblemCategory.problemCategory)
@@ -91,6 +93,7 @@ public class ProblemRepository {
     }
 
     public Optional<Problem> findByIdWithCategory(Long id){
+        queryFactory = new JPAQueryFactory(em);
         Problem fetch = queryFactory.selectFrom(QProblem.problem)
                 .join(QProblem.problem.categories, QProblemCategory.problemCategory)
                 .fetchJoin()

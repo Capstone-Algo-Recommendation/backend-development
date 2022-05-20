@@ -1,14 +1,20 @@
 package capston.cau.controller;
 
+import capston.cau.domain.Member;
 import capston.cau.domain.Problem;
 import capston.cau.dto.MultipleResult;
 import capston.cau.dto.SingleResult;
 import capston.cau.dto.problem.ProblemDto;
+import capston.cau.jwt.JwtTokenProvider;
 import capston.cau.service.ProblemService;
 import capston.cau.service.ResponseService;
+import capston.cau.service.SignService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -17,10 +23,16 @@ public class ProblemApiController {
 
     private final ProblemService problemService;
     private final ResponseService responseService;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final SignService signService;
 
     @GetMapping("/recommendation")
-    public String getProblemRecommend(){
-        return problemService.getRecommendProblems();
+    public MultipleResult<ProblemDto> getProblemRecommend(HttpServletRequest request){
+        String token = jwtTokenProvider.resolveToken(request);
+        Member memberByToken = signService.findMemberByToken(token);
+        List<ProblemDto> recommendProblems = problemService.getRecommendProblems(memberByToken.getId());
+
+        return responseService.getMultipleResult(recommendProblems);
     }
 
     @GetMapping("/{problemId}")
