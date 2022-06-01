@@ -50,10 +50,10 @@ public class MemberService {
 
     //중복 제거하기
     @Transactional
-    public Long addTryingProblem(Long memberId,Long problemId){
+    public Long addTryingProblem(Long memberId,Long problemId,ProblemStatus status){
         Long isRelayed = relayRepository.isRelayed(memberId,problemId);
         if(isRelayed==-1L)
-            return relayRepository.addTrying(memberId,problemId);
+            return relayRepository.addTrying(memberId,problemId,status);
         else
             return isRelayed;
     }
@@ -63,10 +63,14 @@ public class MemberService {
         return relayRepository.changeProblemStatus(memberId,problemId,status);
     }
 
-    public MemberDto getMemberProblemList(Long id,String token) {
-//        Member member = signService.findMemberByToken(token);
+    @Transactional
+    public Long addMemoToProblem(Long memberId, Long problemId, String memo){
+        return relayRepository.addMemo(memberId,problemId,memo);
+    }
+
+    public MemberDto getMemberProblemList(Long id) {
         Member member = this.findById(id);
-        List<Problem> memberProblemList = customMemberRepository.getMemberProblemList(member.getId());
+        List<Problem> memberProblemList = customMemberRepository.getMemberProblemList(id);
         List<ProblemDto> problemDtos = new ArrayList<>();
 
         for (Problem problem : memberProblemList) {
@@ -78,7 +82,7 @@ public class MemberService {
                     .name(problem.getName())
                     .url(problem.getUrl())
                     .level(problem.getLevel())
-                    .status(relayRepository.getMemberProblemStatus(member.getId(),problem.getId()))
+                    .status(relayRepository.getMemberProblemStatus(id,problem.getId()))
                     .categories(categories)
                     .build();
             problemDtos.add(problemDto);
@@ -97,12 +101,30 @@ public class MemberService {
     @Transactional
     public Long initMemberInfo(Long memberId, MemberInfoInitRequestDto requestDto){
         Member member = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
-        member.setBojId(requestDto.getBojId());
-        for (ProblemDto problem : requestDto.getProblems()) {
-            relayRepository.addProblemInit(memberId,problem.getId(),problem.getStatus());
+        if(member.getRole().equals(Role.ROLE_GUEST)) {
+            member.setBojId(requestDto.getBojId());
+            if(requestDto.getProblems()!=null) {
+                for (ProblemDto problem : requestDto.getProblems()) {
+                    relayRepository.addProblemInit(memberId, problem.getId(), problem.getStatus());
+                }
+            }
+            member.setName(requestDto.getName());
+            member.setRole(Role.ROLE_MEMBER);
+        }else{
+            if(requestDto.getProblems()!=null) {
+                for (ProblemDto problem : requestDto.getProblems()) {
+                    if(relayRepository.isRelayed(memberId,problem.getId())==-1L)
+                        relayRepository.addProblemInit(memberId, problem.getId(), problem.getStatus());
+                }
+            }
         }
-        member.setRole(Role.ROLE_MEMBER);
         return member.getId();
+    }
+
+    @Transactional
+    public void withdrawl(Long memberId){
+        memberRepository.delete(memberRepository.getById(memberId));
+        return ;
     }
 
     public List<Problem> getMemberSolvedProblems(Long id){

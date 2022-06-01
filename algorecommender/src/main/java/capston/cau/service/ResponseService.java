@@ -17,7 +17,6 @@ public class ResponseService {
         SingleResult<T> result = new SingleResult<>();
         setSuccessResult(result);
         result.setData(data);
-
         return result;
     }
 

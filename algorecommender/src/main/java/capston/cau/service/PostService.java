@@ -37,10 +37,9 @@ public class PostService {
     private final EntityManager em;
 
     public List<PostPreviewDto> getBoard(Integer page){
-
         Page<Post> posts = postRepository.findAllByOrderByCreatedDateDesc(PageRequest.of(page,10));
         List<PostPreviewDto> result = posts.getContent().stream().map(
-                postEntity->new PostPreviewDto(postEntity.getId(), postEntity.getTitle(), postEntity.getContent()))
+                postEntity->new PostPreviewDto(postEntity.getId(), postEntity.getTitle(), postEntity.getContent(),postEntity.getCreatedDate()))
                 .collect(Collectors.toList());
         return result;
     }
@@ -48,14 +47,16 @@ public class PostService {
     @Transactional
     public Long save(Long memberId, PostSaveRequestDto saveRequestDto){
         Member member = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
-        Problem problem = problemRepository.findById(saveRequestDto.getProblemId()).orElse(null);
+        Problem problem = null;
+        if(saveRequestDto.getProblemId()!=null) {
+            problem = problemRepository.findById(saveRequestDto.getProblemId()).orElse(null);
+        }
         Post post = Post.builder()
                         .member(member)
                         .problem(problem)
                         .title(saveRequestDto.getTitle())
                         .content(saveRequestDto.getContent())
                         .build();
-
         return postRepository.save(post).getId();
     }
 
@@ -85,7 +86,9 @@ public class PostService {
     public PostResponseDto findById(Long id){
         Post post = postRepository.findByPostIdWithComment(id).orElse(null);
         if(post==null){
-            post = postRepository.findById(id).get();
+            post = postRepository.findById(id).orElse(null);
+            if(post==null)
+                throw new PostNotFoundException();
         }
         return new PostResponseDto(post);
     }
@@ -106,17 +109,15 @@ public class PostService {
 
     @Transactional
     public Long updateComment(Long memberId, Long postId,CommentRequestDto commentUpdateRequestDto){
-        Post post = postRepository.findByPostIdWithComment(postId).orElseThrow(PostNotFoundException::new);
         Comment comment = commentRepository.findById(commentUpdateRequestDto.getCommentId()).orElse(null);
         if(comment == null){
             return -1L;
         }
-
         if(comment.getMember().getId() != memberId){
             throw new AccessDeniedException("권한이 필요합니다.");
         }
+        comment.setComment(commentUpdateRequestDto.getContent());
 
-        post.updateComment(commentUpdateRequestDto.getCommentId(), commentUpdateRequestDto.getContent());
         return comment.getId();
     }
 

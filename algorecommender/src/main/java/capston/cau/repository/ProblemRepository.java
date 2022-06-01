@@ -77,6 +77,13 @@ public class ProblemRepository {
         return fetch;
     }
 
+    public Optional<List<CategoryName>> findCategories(){
+        queryFactory = new JPAQueryFactory(em);
+        List<CategoryName> categoryNames = queryFactory.selectFrom(QCategoryName.categoryName)
+                .fetch();
+        return Optional.ofNullable(categoryNames);
+    }
+
     public List<Problem> findProblemByLevelAndCategory(Long level,Long categoryId,Pageable pageable){
         queryFactory = new JPAQueryFactory(em);
         List<Problem> fetch = queryFactory.selectFrom(QProblem.problem)

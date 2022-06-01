@@ -18,7 +18,7 @@ public class ExceptionAdvice {
     @ExceptionHandler(MemberEmailAlreadyExistsException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Result userEmailAlreadyExistsException() {
-        return responseService.getFailureResult(-101, "alread exist email");
+        return responseService.getFailureResult(-101, "already exist email");
     }
 
     @ExceptionHandler(LoginFailureException.class)

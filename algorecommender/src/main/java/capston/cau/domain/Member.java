@@ -76,6 +76,10 @@ public class Member {
         return this;
     }
 
+    public Role getRole() {
+        return role;
+    }
+
     public void setProvider(SocialLoginType valueOf) {
         this.provider = valueOf;
     }

@@ -1,6 +1,8 @@
 package capston.cau.controller;
 
 import capston.cau.domain.Member;
+import capston.cau.domain.ProblemStatus;
+import capston.cau.dto.Result;
 import capston.cau.dto.SingleResult;
 import capston.cau.dto.member.MemberDto;
 import capston.cau.dto.member.request.MemberInfoInitRequestDto;
@@ -28,7 +30,10 @@ public class MemberApiController {
     @GetMapping("/me")
     public SingleResult<MemberDto> getMyInfo(HttpServletRequest request){
         String token = jwtTokenProvider.resolveToken(request);
-        MemberDto memberInfo = memberService.getMemberProblemList(token);
+        if(token==null)
+            return responseService.getSingleResult(new MemberDto());
+        Member memberByToken = signService.findMemberByToken(token);
+        MemberDto memberInfo = memberService.getMemberProblemList(memberByToken.getId());
         return responseService.getSingleResult(memberInfo);
     }
 
@@ -44,7 +49,15 @@ public class MemberApiController {
     public SingleResult addTryingProblem(@PathVariable Long problemId,HttpServletRequest request){
         String token = jwtTokenProvider.resolveToken(request);
         Member memberByToken = signService.findMemberByToken(token);
-        Long result = memberService.addTryingProblem(memberByToken.getId(), problemId);
+        Long result = memberService.addTryingProblem(memberByToken.getId(), problemId, ProblemStatus.TRYING);
+        return responseService.getSingleResult(null);
+    }
+
+    @PostMapping("/me/complete/{problemId}")
+    public SingleResult addCompleteProblem(@PathVariable Long problemId,HttpServletRequest request){
+        String token = jwtTokenProvider.resolveToken(request);
+        Member memberByToken = signService.findMemberByToken(token);
+        Long result = memberService.addTryingProblem(memberByToken.getId(), problemId,ProblemStatus.COMPLETE);
         return responseService.getSingleResult(null);
     }
 
@@ -57,5 +70,12 @@ public class MemberApiController {
     }
 
 
-    //TODO token 선처리를 controller단에서 해주기
+    @PostMapping("/withdrawl")
+    public SingleResult<Result> withdrawl(HttpServletRequest request){
+        String token = jwtTokenProvider.resolveToken(request);
+        Member memberByToken = signService.findMemberByToken(token);
+        memberService.withdrawl(memberByToken.getId());
+        return responseService.getSingleResult(null);
+    }
+
 }

@@ -23,6 +23,8 @@ public class MemberProblem {
     @Enumerated(EnumType.STRING)
     private ProblemStatus problemStatus;
 
+    private String memo;
+
     public void setMember(Member member) {
         this.member = member;
     }
@@ -31,5 +33,8 @@ public class MemberProblem {
     }
     public void setProblemStatus(ProblemStatus problemStatus) {
         this.problemStatus = problemStatus;
+    }
+    public void setMemo(String memo) {
+        this.memo = memo;
     }
 }

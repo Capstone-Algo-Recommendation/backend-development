@@ -4,6 +4,7 @@ import capston.cau.domain.board.Comment;
 import capston.cau.domain.board.Post;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +15,7 @@ public class PostResponseDto {
     private String title;
     private String content;
     private String author;
+    private LocalDateTime writtenAt;
 
     private List<CommentDto> comments=new ArrayList<>();
 
@@ -25,6 +27,7 @@ public class PostResponseDto {
         this.title = entity.getTitle();
         this.content = entity.getContent();
         this.author = entity.getMember().getName();
+        this.writtenAt = entity.getCreatedDate();
 
         List<Comment> comments = entity.getComments();
         if(comments==null){

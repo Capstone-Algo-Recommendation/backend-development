@@ -47,7 +47,7 @@ public class SignService {
                 Member.builder()
                         .email(requestDto.getEmail())
                         .password(passwordEncoder.encode(requestDto.getPassword()))
-                        .role(Role.ROLE_MEMBER)
+                        .role(Role.ROLE_GUEST)
                         .provider(SocialLoginType.LOCAL)
                         .build());
         return MemberRegisterResponseDto.builder()
@@ -68,7 +68,7 @@ public class SignService {
         member.updateRefreshToken(jwtTokenProvider.createRefreshToken());
         return new MemberLoginResponseDto(member.getId(),
                 jwtTokenProvider.createToken(requestDto.getEmail()),
-                member.getRefreshToken());
+                member.getRefreshToken(),member.getRole().toString());
     }
 
     public boolean logoutMember(HttpServletRequest request){
@@ -78,7 +78,7 @@ public class SignService {
     }
 
     @Transactional
-    public MemberLoginResponseDto loginMemberByProvider(String code, SocialLoginType provider) {
+    public MemberLoginResponseDto loginMemberByProviderTest(String code, SocialLoginType provider) {
         AccessToken accessToken = providerService.getAccessToken(code, provider);
         ProfileDto profile = providerService.getProfile(accessToken.getAccess_token(), provider);
 
@@ -86,28 +86,27 @@ public class SignService {
         if (findMember.isPresent()) {
             Member member = findMember.get();
             member.updateRefreshToken(jwtTokenProvider.createRefreshToken());
-            return new MemberLoginResponseDto(member.getId(), jwtTokenProvider.createToken(findMember.get().getEmail()), member.getRefreshToken());
+            return new MemberLoginResponseDto(member.getId(), jwtTokenProvider.createToken(findMember.get().getEmail()), member.getRefreshToken(),member.getRole().toString());
         } else {
             Member saveMember = saveMember(profile, provider);
             saveMember.updateRefreshToken(jwtTokenProvider.createRefreshToken());
-            return new MemberLoginResponseDto(saveMember.getId(), jwtTokenProvider.createToken(saveMember.getEmail()), saveMember.getRefreshToken());
+            return new MemberLoginResponseDto(saveMember.getId(), jwtTokenProvider.createToken(saveMember.getEmail()), saveMember.getRefreshToken(),saveMember.getRole().toString());
         }
     }
 
     @Transactional
-    public MemberLoginResponseDto loginMemberByProvider2(AccessToken accessToken, SocialLoginType provider) {
-//        AccessToken accessToken = providerService.getAccessToken(code, provider);
+    public MemberLoginResponseDto loginMemberByProvider(AccessToken accessToken, SocialLoginType provider) {
         ProfileDto profile = providerService.getProfile(accessToken.getAccess_token(), provider);
 
         Optional<Member> findMember = memberRepository.findByEmailAndProvider(profile.getEmail(), provider);
         if (findMember.isPresent()) {
             Member member = findMember.get();
             member.updateRefreshToken(jwtTokenProvider.createRefreshToken());
-            return new MemberLoginResponseDto(member.getId(), jwtTokenProvider.createToken(findMember.get().getEmail()), member.getRefreshToken());
+            return new MemberLoginResponseDto(member.getId(), jwtTokenProvider.createToken(findMember.get().getEmail()), member.getRefreshToken(),member.getRole().toString());
         } else {
             Member saveMember = saveMember(profile, provider);
             saveMember.updateRefreshToken(jwtTokenProvider.createRefreshToken());
-            return new MemberLoginResponseDto(saveMember.getId(), jwtTokenProvider.createToken(saveMember.getEmail()), saveMember.getRefreshToken());
+            return new MemberLoginResponseDto(saveMember.getId(), jwtTokenProvider.createToken(saveMember.getEmail()), saveMember.getRefreshToken(),saveMember.getRole().toString());
         }
     }
 
@@ -146,7 +145,7 @@ public class SignService {
             throw new AccessTokenInvalidatedException();
         }
 
-        System.out.println("validate error not happened");
+//        System.out.println("validate error not happened");
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
         String username = userDetails.getUsername();
         return memberRepository.findByEmail(username).orElseThrow(MemberNotFoundException::new);

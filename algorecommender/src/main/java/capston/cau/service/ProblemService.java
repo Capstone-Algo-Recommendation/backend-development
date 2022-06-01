@@ -5,6 +5,7 @@ import capston.cau.domain.Problem;
 import capston.cau.domain.ProblemCategory;
 import capston.cau.dto.problem.FlaskResponse;
 import capston.cau.dto.problem.ProblemDto;
+import capston.cau.repository.MemberProblemRepository;
 import capston.cau.repository.ProblemRepository;
 import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.google.gson.Gson;
@@ -28,6 +29,7 @@ public class ProblemService {
 
     private final ProblemRepository problemRepository;
     private final MemberService memberService;
+    private final MemberProblemRepository relayRepository;
 
     @Transactional
     public Long addProblem(Problem problem){
@@ -47,6 +49,17 @@ public class ProblemService {
     public Long setProblemCategory(Long problemId, Long categoryId){
         Long id = problemRepository.setProblemCategory(problemId,categoryId);
         return id;
+    }
+
+    public List<String> findCategoryNames(){
+        List<CategoryName> categories = problemRepository.findCategories().orElse(null);
+        List<String> categoryNames = new ArrayList<>();
+        if(categories ==null)
+            return categoryNames;
+        for (CategoryName category : categories) {
+            categoryNames.add(category.getCategory());
+        }
+        return categoryNames;
     }
 
     public Long findCategoryByName(String name){
@@ -72,7 +85,7 @@ public class ProblemService {
         return true;
     }
 
-    public ProblemDto findByIdToDto(Long id){
+    public ProblemDto findByIdToDto(Long memberId, Long id){
         Problem findProblem = problemRepository.findByIdWithCategory(id).orElse(null);
         if(findProblem==null)
             findProblem = problemRepository.findById(id).orElse(null);
@@ -92,6 +105,11 @@ public class ProblemService {
                 .level(findProblem.getLevel())
                 .categories(categories)
                 .build();
+        Long relayFlag = relayRepository.isRelayed(memberId,id);
+        if (relayFlag != -1L){
+            problemDto.setMemo(relayRepository.findById(relayFlag).getMemo());
+            problemDto.setStatus(relayRepository.findById(relayFlag).getProblemStatus());
+        }
 
         return problemDto;
     }
@@ -141,8 +159,8 @@ public class ProblemService {
         RestTemplate restTemplate = new RestTemplate();
         List<Problem> memberSolvedProblems = memberService.getMemberSolvedProblems(memberId);
 
-//        if(memberSolvedProblems.size()<=15)
-//            return null;
+        if(memberSolvedProblems.size()<=15)
+            return coldStartProblems(memberId);
 
         HttpHeaders headers = new HttpHeaders();;
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -158,17 +176,18 @@ public class ProblemService {
         }
 
         jsonObject.add("data", problemArr);
+        jsonObject.addProperty("email",memberId);
 
         HttpEntity<String> entity = new HttpEntity<String>(jsonObject.toString(), headers);
         String returnData = "";
         try {
             List<ProblemDto> recommList = new ArrayList<>();
-            ResponseEntity<String> resp = restTemplate.postForEntity("http://localhost:5050/tospring", entity, String.class);
+            ResponseEntity<String> resp = restTemplate.postForEntity("http://34.64.151.100:5050/tospring", entity, String.class);
             returnData = resp.getBody();
 
             FlaskResponse ret = new Gson().fromJson(returnData,FlaskResponse.class);
             for (Long datum : ret.getData()) {
-                ProblemDto probData = this.findByIdToDto(datum);
+                ProblemDto probData = this.findByIdToDto(memberId,datum);
                 if(probData != null)
                     recommList.add(probData);
             }
@@ -179,6 +198,17 @@ public class ProblemService {
         return null;
     }
 
+    private List<ProblemDto> coldStartProblems(Long memberId){
+        List<ProblemDto> recommList = new ArrayList<>();
+        Long[] starterPack = {2557L,10718L,10171L,25083L,1000L,
+                                1330L,9498L,2753L,14681L,2884L,
+                                2739L,10950L,8393L,15552L,2741L};
 
+        for (Long aLong : starterPack) {
+            ProblemDto probData = this.findByIdToDto(memberId,aLong);
+            recommList.add(probData);
+        }
+        return recommList;
+    }
 
 }

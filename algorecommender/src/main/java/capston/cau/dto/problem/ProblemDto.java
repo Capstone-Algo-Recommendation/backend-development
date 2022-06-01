@@ -16,6 +16,7 @@ public class ProblemDto {
     private String name;
     private String url;
     private ProblemStatus status;
+    private String memo;
     private Long level;
     private List<String> categories;
 

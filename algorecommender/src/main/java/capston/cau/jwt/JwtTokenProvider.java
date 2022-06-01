@@ -27,7 +27,7 @@ public class JwtTokenProvider {
     @Value("${spring.jwt.secretKey}")
     private String secretKey;
 
-    private long tokenValidTime = 1000L*60*60;
+    private long tokenValidTime = 1000L*60*60*24*60;
     private long refreshTokenValidTime = 1000L*60*60*24*1;
 
     private final MemberDetailsService memberDetailsService;
@@ -70,6 +70,8 @@ public class JwtTokenProvider {
             return e.getClaims().getSubject();
         } catch(SignatureException e){
             throw new MemberNotFoundException();
+        } catch (Exception e){
+             throw new MemberNotFoundException();
         }
     }
 

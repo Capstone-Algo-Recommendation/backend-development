@@ -30,7 +30,7 @@ public class MemberProblemRepository {
         return ProblemStatus.NONE;
     }
 
-    public Long addTrying(Long memberId,Long problemId){
+    public Long addTrying(Long memberId,Long problemId,ProblemStatus status){
         MemberProblem mp = new MemberProblem();
         Member findMember = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
         Problem findProblem = problemRepository.findById(problemId).orElseThrow(ProblemNotFoundException::new);
@@ -39,19 +39,29 @@ public class MemberProblemRepository {
             return -1L;
         mp.setMember(findMember);
         mp.setProblem(findProblem);
-        mp.setProblemStatus(ProblemStatus.TRYING);
+        mp.setProblemStatus(status);
         em.persist(mp);
         return mp.getId();
+    }
+
+    public Long addMemo(Long memberId,Long problemId,String memo){
+        queryFactory = new JPAQueryFactory(em);
+        MemberProblem memberProblem = queryFactory.selectFrom(QMemberProblem.memberProblem)
+                .where(QMemberProblem.memberProblem.member.id.eq(memberId),QMemberProblem.memberProblem.problem.id.eq(problemId))
+                .fetchOne();
+        if(memberProblem!=null){
+            memberProblem.setMemo(memo);
+            return memberProblem.getId();
+        }
+        return -1L;
     }
 
     public Long addProblemInit(Long memberId,Long problemId,ProblemStatus status){
         MemberProblem mp = new MemberProblem();
         Member findMember = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
         Problem findProblem = problemRepository.findById(problemId).orElse(null);
-
         if(findProblem==null)
             return -1L;
-
         mp.setMember(findMember);
         mp.setProblem(findProblem);
         mp.setProblemStatus(status);
