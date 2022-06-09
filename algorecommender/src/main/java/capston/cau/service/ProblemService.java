@@ -182,7 +182,7 @@ public class ProblemService {
         String returnData = "";
         try {
             List<ProblemDto> recommList = new ArrayList<>();
-            ResponseEntity<String> resp = restTemplate.postForEntity("http://34.64.151.100:5050/tospring", entity, String.class);
+            ResponseEntity<String> resp = restTemplate.postForEntity("http://34.64.49.195:5050/tospring", entity, String.class);
             returnData = resp.getBody();
 
             FlaskResponse ret = new Gson().fromJson(returnData,FlaskResponse.class);
